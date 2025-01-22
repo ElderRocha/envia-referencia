@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envia Referência</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2f;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 300px;
+            max-width: 400px;
+            height: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin: 0;
+            color: #ffcc00;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        label {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #2a2a3c;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #ffcc00;
+        }
+
+        input.error {
+            border-color: #ff4d4d;
+            box-shadow: 0 0 5px #ff4d4d;
+        }
+
+        button {
+            align-self: flex-end;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ffcc00;
+            color: #1e1e2f;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:hover {
+            background-color: #e6b800;
+        }
+
+        .footer {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: auto;
+        }
+
+        .footer a {
+            color: #ffcc00;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .popup-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #2a2a3c;
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            display: none;
+            z-index: 1000;
+        }
+
+        .popup-message.show {
+            display: block;
+        }
+    </style>
+    <script src="popup.js" defer></script>
+</head>
+<body>
+    <h1>Envia Referência</h1>
+
+    <div class="input-group">
+        <label for="phone">Número de destino</label>
+        <input type="text" id="phone" placeholder="(99) 99999-9999">
+    </div>
+
+    <button id="saveButton">Salvar</button>
+
+    <div class="footer">
+        Handcrafted by <a href="#">Elder Rocha</a>
+    </div>
+
+    <div class="popup-message" id="popupMessage"></div>
+</body>
+</html>
