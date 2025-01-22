@@ -23,14 +23,10 @@ window.addEventListener('load', function() {
     let isEditPage = /\/edit/.test(currentUrl);
 
     function getElementText(selector, isXPath = false) {
-        if (isXPath) {
-            const result = document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-            const element = result.singleNodeValue;
-            return element ? element.textContent.trim() : null;
-        } else {
-            const element = document.querySelector(selector);
-            return element ? element.textContent.trim() : null;
-        }
+        const result = isXPath
+            ? document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+            : document.querySelector(selector);
+        return result ? result.textContent.trim() : null;
     }
 
     function checkAllElementsFound() {
@@ -160,31 +156,63 @@ window.addEventListener('load', function() {
         isPersonPage = /\/person\//.test(currentUrl);
         isMissionPage = /\/persons\/mission/.test(currentUrl);
         isEditPage = /\/edit/.test(currentUrl);
-
-        const alertDiv = document.getElementById('uba-alert');
-        if (alertDiv) {
-            alertDiv.style.display = isPersonPage && cidadesUba.some(city => getElementText(selectors.address, true)?.includes(city)) ? 'block' : 'none';
-        }
     
-        if (isPersonPage) {
-            if (!getElementText(selectors.personName) || 
-                !getElementText(selectors.phoneNumber, true) || 
-                !getElementText(selectors.address, true) || 
-                !getElementText(selectors.areaName, true) || 
+        if (isEditPage) {
+            hidePersonPageElements();
+            editPage();
+        } else if (isPersonPage) {
+            showPersonPageElements();
+            
+            const alertDiv = document.getElementById('uba-alert');
+            if (alertDiv) {
+                const address = getElementText(selectors.address, true) || '';
+                alertDiv.style.display = cidadesUba.some(city => address.includes(city)) ? 'block' : 'none';
+            }
+    
+            if (!getElementText(selectors.personName) ||
+                !getElementText(selectors.phoneNumber, true) ||
+                !getElementText(selectors.address, true) ||
+                !getElementText(selectors.areaName, true) ||
                 !getElementText(selectors.areaPhoneNumber, true)) {
                 observeElements();
             } else {
                 checkAllElementsFound();
             }
         } else {
-            const button = document.getElementById('enviar-referencia-button');
-            if (button) button.remove();
+            hidePersonPageElements();
         }
+    }    
+
+    function hidePersonPageElements() {
+        const personElements = document.querySelectorAll('.teaching-record-person-name, #enviar-referencia-button, #uba-alert');
+        personElements.forEach(el => el.style.display = 'none');
     
-        if(isEditPage){
-            editPage();
-        }
+        const ubaAlert = document.getElementById('uba-alert');
+        if (ubaAlert) ubaAlert.remove();
     }
+
+    function observeUBAAlert() {
+        const observer = new MutationObserver(() => {
+            const ubaAlert = document.getElementById('uba-alert');
+            if (ubaAlert && isEditPage) {
+                ubaAlert.remove();
+            }
+        });
+    
+        observer.observe(document.body, { childList: true, subtree: true });
+    }    
+    
+    function showPersonPageElements() {
+        const personElements = document.querySelectorAll('.teaching-record-person-name');
+        personElements.forEach(el => el.style.display = 'block');
+    
+        const button = document.getElementById('enviar-referencia-button');
+        if (!button) {
+            checkAllElementsFound();
+        } else {
+            button.style.display = 'block';
+        }
+    }    
 
     function formatTime(date) {
         const hours = date.getHours().toString().padStart(2, '0');
@@ -270,28 +298,16 @@ window.addEventListener('load', function() {
     window.addEventListener('popstate', checkUrlAndButton);
     checkUrlAndButton();
     observeUrlChanges();
+    observeUBAAlert();
 
-    function findRequest(request){
+    function findRequest(request) {
+        const map = {
+            baptism: "Batismo", lesson: "Lição", fellowship: "Companheirismo",
+            temple: "Templo", family: "História da Família", visit: "Visita",
+            church: "Igreja", book: "Livro de Mórmon"
+        };
         request = request.toLowerCase();
-        if(request.includes("baptism") || request.includes("batismo") || request.includes("baptismo")){
-            return "Batismo";
-        } else if(request.includes("lesson") || request.includes("lição")){
-            return "Lição";
-        } else if(request.includes("fellowship") || request.includes("companionship")){
-            return "Companheirismo";
-        } else if(request.includes("temple") || request.includes("templo")){
-            return "Templo";
-        } else if(request.includes("family") || request.includes("familysearch") || request.includes("history")){
-            return "História da Família";
-        } else if(request.includes("missionary visit") || request.includes("mission-specific offer")){
-            return "Visita";
-        } else if(request.includes("church")){
-            return "Igreja";
-        } else if(request.includes("book") || request.includes("mormon")){
-            return "Livro de Mórmon";
-        } else {
-            return "Visita";
-        }
+        return Object.keys(map).find(key => request.includes(key)) || 'Visita';
     }
 
     function showNoSavedPhoneNumberAlert() {
@@ -305,14 +321,13 @@ window.addEventListener('load', function() {
             alertDiv.style.zIndex = '1000';
             alertDiv.style.padding = '10px 20px';
             alertDiv.style.color = '#fff';
-            alertDiv.style.backgroundColor = '#f44336'; // Cor vermelha para erro
+            alertDiv.style.backgroundColor = '#f44336';
             alertDiv.style.border = 'none';
             alertDiv.style.borderRadius = '5px';
             alertDiv.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
             alertDiv.style.fontSize = '16px';
             alertDiv.textContent = 'Não há número salvo para enviar a referência!';
-    
-            // Adicionando botão de fechar
+
             const closeButton = document.createElement('button');
             closeButton.textContent = 'Fechar';
             closeButton.style.backgroundColor = '#ff6f61';
@@ -329,7 +344,7 @@ window.addEventListener('load', function() {
             document.body.appendChild(alertDiv);
         }
     
-        alertDiv.style.display = 'block'; // Mostra o alerta
+        alertDiv.style.display = 'block';
     }
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
