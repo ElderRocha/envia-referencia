@@ -408,6 +408,7 @@ window.addEventListener('load', function() {
                 const dateSendElement = document.evaluate(dateSendSelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
                 if (dateSendElement) {
                     dateSendElement.click();
+                    dateSendElement.click();
                 }
             }
         });
