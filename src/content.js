@@ -1,14 +1,20 @@
 window.addEventListener('load', function() {
     const selectors = {
+        // Person page
         personName: '.teaching-record-person-name',
         phoneNumber: '//*[@id="clickable-phone-field-0"]/div/tc-clickable-phone/div',
         address: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-teaching-record/div/tc-teaching-record-profile/div/tc-profile-location-info/div/div[2]/div[1]/div[1]/div[1]',
         areaName: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-teaching-record/div/tc-teaching-record-profile/div/tc-profile-assignment-info/div/tc-suggested-assignment/form/div/div[4]/div[1]/div/select/option',
         areaPhoneNumber: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-teaching-record/div/tc-teaching-record-profile/div/tc-profile-assignment-info/div/tc-suggested-assignment/form/div/div[4]/div[2]/tc-area-missionaries/div[2]/tc-clickable-phone/div/text()',
         request: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-teaching-record/div/tc-teaching-record-profile/div/tc-profile-offers-info/div/div[2]/div[2]/div[1]',
+        
+        // Edit Page
         startTime: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-event-form-container/form/div[1]/tc-event-form/fieldset[1]/div/div[1]/div[2]/div[1]/tc-timepicker/div/input',
         endTime: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-event-form-container/form/div[1]/tc-event-form/fieldset[1]/div/div[1]/div[2]/div[2]/tc-timepicker/div/input',
-        contactType: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-event-form-container/form/div[1]/tc-event-form/fieldset[1]/div/div[1]/div[4]/select'
+        contactType: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-event-form-container/form/div[1]/tc-event-form/fieldset[1]/div/div[1]/div[4]/select',
+        
+        //Mission Page
+        requests: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/ng-component/mat-sidenav-container/mat-sidenav-content/div/div[2]/div/tc-person-table-container/tc-collapse-expand[1]/section/tc-person-table/table/tbody'
     };
 
     const cidadesUba = [
@@ -160,6 +166,8 @@ window.addEventListener('load', function() {
         if (isEditPage) {
             hidePersonPageElements();
             editPage();
+        }else if(isMissionPage){
+            initMissionPageUBAAlert();
         } else if (isPersonPage) {
             showPersonPageElements();
             
@@ -346,6 +354,62 @@ window.addEventListener('load', function() {
     
         alertDiv.style.display = 'block';
     }
+
+    function checkUBAInMissionPage() {
+        const tbodySelector = selectors.requests;
+        const tbody = document.evaluate(tbodySelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        if (!tbody) return;
+    
+        // Observa mudanças no tbody
+        const observer = new MutationObserver(() => {
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const contactInfoCell = row.querySelector('.cdk-column-contactInfo');
+                if (!contactInfoCell) return;
+                console.log(row);
+    
+                const address = contactInfoCell.textContent.trim();
+                const isUba = cidadesUba.some(city => address.includes(city));
+    
+                // Verifica se já existe o alerta para evitar duplicação
+                let ubaAlert = contactInfoCell.querySelector('.uba-alert');
+                if (isUba && !ubaAlert) {
+                    ubaAlert = document.createElement('span');
+                    ubaAlert.className = 'uba-alert';
+                    ubaAlert.textContent = ' ⚠️ UBA';
+                    ubaAlert.style.color = '#ffc107';
+                    ubaAlert.style.marginLeft = '10px';
+                    ubaAlert.style.fontWeight = 'bold';
+                    contactInfoCell.appendChild(ubaAlert);
+                } else if (!isUba && ubaAlert) {
+                    ubaAlert.remove();
+                }
+            });
+        });
+    
+        observer.observe(tbody, { childList: true, subtree: true });
+    }
+    
+    function initMissionPageUBAAlert() {
+        const tbodySelector = selectors.requests;
+    
+        // Observa mudanças na página para detectar quando o tbody é carregado
+        const observer = new MutationObserver(() => {
+            const tbody = document.evaluate(tbodySelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+            if (tbody) {
+                observer.disconnect(); // Para de observar uma vez que o tbody foi encontrado
+                checkUBAInMissionPage();
+            }
+        });
+    
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+    
+    // Chamada na verificação da página atual
+    if (isMissionPage) {
+        initMissionPageUBAAlert();
+    }
+    
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.action === 'reloadPage') {
