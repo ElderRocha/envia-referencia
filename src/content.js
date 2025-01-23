@@ -112,7 +112,7 @@ window.addEventListener('load', function() {
 
         request = findRequest(request);
 
-        const isUba = cidadesUba.some(city => address.includes(city));
+        const isUba = checkUBACity(address);
         alertDiv.style.display = isUba ? 'block' : 'none';
         alertDiv.textContent = isUba ? 'A referência pode ser UBA' : '';
 
@@ -174,7 +174,7 @@ window.addEventListener('load', function() {
             const alertDiv = document.getElementById('uba-alert');
             if (alertDiv) {
                 const address = getElementText(selectors.address, true) || '';
-                alertDiv.style.display = cidadesUba.some(city => address.includes(city)) ? 'block' : 'none';
+                alertDiv.style.display = checkUBACity(address) ? 'block' : 'none';
             }
     
             if (!getElementText(selectors.personName) ||
@@ -355,6 +355,14 @@ window.addEventListener('load', function() {
         alertDiv.style.display = 'block';
     }
 
+    function checkUBACity(address) {
+        console.log(address);
+        const normalizeString = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const addressLower = normalizeString(address.toLowerCase());
+        const isUba = cidadesUba.some(city => normalizeString(city.toLowerCase()) && addressLower.includes(normalizeString(city.toLowerCase())));
+        return isUba;
+    }
+
     function checkUBAInMissionPage() {
         const tbodySelector = selectors.requests;
         const tbody = document.evaluate(tbodySelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
@@ -369,7 +377,7 @@ window.addEventListener('load', function() {
                 console.log(row);
     
                 const address = contactInfoCell.textContent.trim();
-                const isUba = cidadesUba.some(city => address.includes(city));
+                const isUba = checkUBACity(address);
     
                 // Verifica se já existe o alerta para evitar duplicação
                 let ubaAlert = contactInfoCell.querySelector('.uba-alert');
