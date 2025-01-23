@@ -357,7 +357,6 @@ window.addEventListener('load', function() {
     }
 
     function checkUBACity(address) {
-        console.log(address);
         const normalizeString = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const addressLower = normalizeString(address.toLowerCase());
         const isUba = cidadesUba.some(city => normalizeString(city.toLowerCase()) && addressLower.includes(normalizeString(city.toLowerCase())));
@@ -368,19 +367,16 @@ window.addEventListener('load', function() {
         const tbodySelector = selectors.requests;
         const tbody = document.evaluate(tbodySelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
         if (!tbody) return;
-    
-        // Observa mudanças no tbody
+
         const observer = new MutationObserver(() => {
             const rows = tbody.querySelectorAll('tr');
             rows.forEach(row => {
                 const contactInfoCell = row.querySelector('.cdk-column-contactInfo');
                 if (!contactInfoCell) return;
-                console.log(row);
     
                 const address = contactInfoCell.textContent.trim();
                 const isUba = checkUBACity(address);
     
-                // Verifica se já existe o alerta para evitar duplicação
                 let ubaAlert = contactInfoCell.querySelector('.uba-alert');
                 if (isUba && !ubaAlert) {
                     ubaAlert = document.createElement('span');
@@ -403,18 +399,15 @@ window.addEventListener('load', function() {
         const tbodySelector = selectors.requests;
         const dateSendSelector = selectors.dateSend;
     
-        // Observa mudanças na página para detectar quando o tbody é carregado
         const observer = new MutationObserver(() => {
             const tbody = document.evaluate(tbodySelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
             if (tbody) {
-                observer.disconnect(); // Para de observar uma vez que o tbody foi encontrado
+                observer.disconnect();
                 checkUBAInMissionPage();
     
-                // Aguarda carregamento do elemento `dateSend` e simula o clique
                 const dateSendElement = document.evaluate(dateSendSelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
                 if (dateSendElement) {
                     dateSendElement.click();
-                    console.log("`dateSend` clicado com sucesso!");
                 }
             }
         });
@@ -422,7 +415,6 @@ window.addEventListener('load', function() {
         observer.observe(document.body, { childList: true, subtree: true });
     }    
     
-    // Chamada na verificação da página atual
     if (isMissionPage) {
         initMissionPageUBAAlert();
     }
