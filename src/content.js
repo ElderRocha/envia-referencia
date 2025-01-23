@@ -14,7 +14,8 @@ window.addEventListener('load', function() {
         contactType: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/tc-event-form-container/form/div[1]/tc-event-form/fieldset[1]/div/div[1]/div[4]/select',
         
         //Mission Page
-        requests: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/ng-component/mat-sidenav-container/mat-sidenav-content/div/div[2]/div/tc-person-table-container/tc-collapse-expand[1]/section/tc-person-table/table/tbody'
+        requests: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/ng-component/mat-sidenav-container/mat-sidenav-content/div/div[2]/div/tc-person-table-container/tc-collapse-expand[1]/section/tc-person-table/table/tbody',
+        dateSend: '/html/body/app-root/app-container/div/div/tc-unity-view/div/div[2]/ng-component/mat-sidenav-container/mat-sidenav-content/div/div[2]/div/tc-person-table-container/tc-collapse-expand[1]/section/tc-person-table/table/thead/tr/th[6]'
     };
 
     const cidadesUba = [
@@ -400,6 +401,7 @@ window.addEventListener('load', function() {
     
     function initMissionPageUBAAlert() {
         const tbodySelector = selectors.requests;
+        const dateSendSelector = selectors.dateSend;
     
         // Observa mudanças na página para detectar quando o tbody é carregado
         const observer = new MutationObserver(() => {
@@ -407,11 +409,18 @@ window.addEventListener('load', function() {
             if (tbody) {
                 observer.disconnect(); // Para de observar uma vez que o tbody foi encontrado
                 checkUBAInMissionPage();
+    
+                // Aguarda carregamento do elemento `dateSend` e simula o clique
+                const dateSendElement = document.evaluate(dateSendSelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                if (dateSendElement) {
+                    dateSendElement.click();
+                    console.log("`dateSend` clicado com sucesso!");
+                }
             }
         });
     
         observer.observe(document.body, { childList: true, subtree: true });
-    }
+    }    
     
     // Chamada na verificação da página atual
     if (isMissionPage) {
